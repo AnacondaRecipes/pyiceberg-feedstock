@@ -12,22 +12,19 @@ source:
 build:
   entry_points:
     - pyiceberg = pyiceberg.cli.console:run
-  noarch: python
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-  number: 1
+  number: 0
+  skip: true  # [py<38 or py>311]
 
 requirements:
   host:
-    - python >=3.8,<4.0
+    - python
     - poetry-core >=1.0.0
-    - wheel
     - cython >=3.0.0
-    - setuptools
     - pip
   run:
-    - python >=3.8.0,<4.0.0
-    - mmhash3 >=3.0.0,<4.0.0
-    - mmh3 >=4.0.0,<5.0.0     # pip uses mmhash3
+    - python
+    - mmh3 >=4.0.0,<5.0.0
     - requests >=2.20.0,<3.0.0
     - click >=7.1.1,<9.0.0
     - rich >=10.11.0,<14.0.0
@@ -40,20 +37,6 @@ requirements:
     - tenacity >=8.2.3,<9.0.0
   run_constrained:
 # https://github.com/apache/iceberg-python/blob/main/pyproject.toml#L60C1-L60C59
-#pyarrow = { version = ">=9.0.0,<16.0.0", optional = true }
-#pandas = { version = ">=1.0.0,<3.0.0", optional = true }
-#duckdb = { version = ">=0.5.0,<1.0.0", optional = true }
-#ray = { version = ">=2.0.0,<2.10.0", optional = true }
-#python-snappy = { version = ">=0.6.0,<1.0.0", optional = true }
-#thrift = { version = ">=0.13.0,<1.0.0", optional = true }
-#mypy-boto3-glue = { version = ">=1.28.18", optional = true }
-#boto3 = { version = ">=1.24.59", optional = true }
-#3fs = { version = ">=2023.1.0,<2024.1.0", optional = true }
-#adlfs = { version = ">=2023.1.0,<2024.3.0", optional = true }
-#gcsfs = { version = ">=2023.1.0,<2024.1.0", optional = true }
-#psycopg2-binary = { version = ">=2.9.6", optional = true }
-#sqlalchemy = { version = "^2.0.18", optional = true }
-#getdaft = { version = ">=0.2.12", optional = true }
     - pyarrow >=9.0.0,<18.0.0
     - pandas >=1.0.0,<3.0.0
     - duckdb >=0.5.0,<1.0.0
@@ -83,8 +66,14 @@ test:
 
 about:
   home: https://iceberg.apache.org/
+  dev_url: https://github.com/apache/iceberg-python/
+  doc_url: https://py.iceberg.apache.org/
   summary: Apache Iceberg is an open table format for huge analytic datasets
+  description: |
+    PyIceberg is a Python library for programmatic access to Iceberg
+    table metadata as well as to table data in Iceberg format.
   license: Apache-2.0
+  license_family: Apache
   license_file:
     - NOTICE
     - LICENSE
