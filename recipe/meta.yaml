@@ -54,15 +54,30 @@ requirements:
     - numpy >=1.22.4,<2.0.0
 
 test:
+  source_files:
+    - pyproject.toml
+    - tests
   imports:
     - fb303
     - hive_metastore
     - pyiceberg
   commands:
-    - pip check
+  #pyspark 3.4.1 has requirement py4j==0.10.9.7, but you have py4j 0.10.9.3
+    #- pip check
     - pyiceberg --help
+    - pytest --ignore="tests/io/test_fsspec.py" --ignore="tests/integration/" --ignore="tests/catalog/test_rest.py" --ignore="tests/catalog/test_base.py" --ignore="tests/catalog/test_glue.py" --ignore="tests/catalog/test_sql.py" --ignore="tests/cli/test_console.py" -k "not gcs"
   requires:
     - pip
+    - pytest
+    - boto3
+    - moto >=5.0.2,<6.0.0
+    - pyarrow
+    - fastavro
+    - numpy
+    - pyspark
+    - pytest-mock
+    - thrift
+    - sqlalchemy
 
 about:
   home: https://iceberg.apache.org/
