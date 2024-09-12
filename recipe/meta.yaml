@@ -68,19 +68,20 @@ test:
   #pyspark 3.4.1 has requirement py4j==0.10.9.7, but you have py4j 0.10.9.3
     #- pip check
     - pyiceberg --help
-    - pytest --ignore="tests/io/test_fsspec.py" --ignore="tests/integration/" --ignore="tests/catalog/test_rest.py" --ignore="tests/catalog/test_base.py" --ignore="tests/catalog/test_glue.py" --ignore="tests/catalog/test_sql.py" --ignore="tests/cli/test_console.py" -k "not gcs"
+    - pytest --ignore="tests/io/test_fsspec.py" --ignore="tests/integration/" --ignore="tests/catalog/" --ignore="tests/cli/test_console.py" -k "not gcs"  # [not s390x]
   requires:
     - pip
+    {% if not s390x %}
     - pytest
+    - pytest-mock
     - boto3
     - moto >=5.0.2,<6.0.0
     - pyarrow
     - fastavro
     - numpy
     - pyspark
-    - pytest-mock
     - thrift
-    - sqlalchemy
+    {% endif %}
 
 about:
   home: https://iceberg.apache.org/
