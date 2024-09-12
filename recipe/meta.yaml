@@ -65,10 +65,17 @@ test:
     - hive_metastore
     - pyiceberg
   commands:
-  #pyspark 3.4.1 has requirement py4j==0.10.9.7, but you have py4j 0.10.9.3
-    #- pip check
+  # Missing pytest_lazyfixture
+    {% set pytest_args = '--ignore="tests/io/test_fsspec.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/cli/test_console.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/catalog/"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/integration/"' %}
+  # Skip google cloud tests
+    {% set pytest_args = pytest_args + ' -m "not gcs"' %}
+    - pip check
     - pyiceberg --help
-    - pytest --ignore="tests/io/test_fsspec.py" --ignore="tests/integration/" --ignore="tests/catalog/" --ignore="tests/cli/test_console.py" -k "not gcs"  # [not s390x]
+  # s390x missing moto
+    - pytest {{ pytest_args }}  # [not s390x]
   requires:
     - pip
     {% if not s390x %}
@@ -79,8 +86,11 @@ test:
     - pyarrow
     - fastavro
     - numpy
-    - pyspark
+    # Exact pinnings for pyspark and py4j to avoid pip check error
+    - pyspark 3.4.1
+    - py4j 0.10.9.7
     - thrift
+    - sqlalchemy
     {% endif %}
 
 about:
