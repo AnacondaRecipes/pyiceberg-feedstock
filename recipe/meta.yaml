@@ -74,8 +74,8 @@ test:
     {% set pytest_args = pytest_args + ' -m "not gcs"' %}
   # Tests incompatible with windows due to path formatting
   {% if win %}
-    {% set pytest_args = pytest_args + ' --ignore="tests\io\test_io.py"' %}
-    {% set pytest_args = pytest_args + ' --ignore="tests\io\test_pyarrow.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/io/test_io.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/io/test_pyarrow.py"' %}
     {% set pytest_args = pytest_args + ' --ignore="tests/utils/test_manifest.py"' %}
     {% set pytest_args = pytest_args + ' --ignore="tests/avro/test_file.py"' %}
     {% set pytest_args = pytest_args + ' --ignore="tests/avro/test_file.py"' %}
