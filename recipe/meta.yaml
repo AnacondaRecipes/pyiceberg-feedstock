@@ -71,7 +71,7 @@ test:
     {% set pytest_args = pytest_args + ' --ignore="tests/catalog/"' %}
     {% set pytest_args = pytest_args + ' --ignore="tests/integration/"' %}
   # Skip google cloud tests
-    {% set pytest_args = pytest_args + -m "not gcs" %}
+    {% set pytest_args = pytest_args + '-m "not gcs"' %}
   # Tests incompatible with windows due to path formatting
   {% if win %}
     {% set pytest_args = pytest_args + ' --ignore="tests\io\test_io.py"' %}
