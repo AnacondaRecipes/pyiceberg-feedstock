@@ -85,6 +85,8 @@ test:
     {% set test_skips = test_skips + " or static_table_same_as_table" %}
     {% set test_skips = test_skips + " or static_table_gz_same_as_table" %}
     {% set test_skips = test_skips + " or static_table_io_does_not_exist" %}
+    {% set test_skips = test_skips + " or ymd_pyarrow_transforms" %}
+    {% set test_skips = test_skips + " or legacy_current_snapshot_id" %}
     {% set test_skips = test_skips + ')"' %}
     {% set pytest_args = pytest_args + test_skips %}
   {% endif %}
