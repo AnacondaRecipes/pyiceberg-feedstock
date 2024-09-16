@@ -79,7 +79,7 @@ test:
     {% set pytest_args = pytest_args + ' --ignore="tests/utils/test_manifest.py"' %}
     {% set pytest_args = pytest_args + ' --ignore="tests/avro/test_file.py"' %}
     {% set pytest_args = pytest_args + ' --ignore="tests/avro/test_file.py"' %}
-    {% set test_skips = '-k "(' %}
+    {% set test_skips = ' -k "not (' %}
     {% set test_skips = test_skips + "read_header" %}
     {% set test_skips = test_skips + " or column_assignment" %}
     {% set test_skips = test_skips + " or static_table_same_as_table" %}
