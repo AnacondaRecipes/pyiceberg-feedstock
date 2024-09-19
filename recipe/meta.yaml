@@ -12,22 +12,22 @@ source:
 build:
   entry_points:
     - pyiceberg = pyiceberg.cli.console:run
-  noarch: python
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-  number: 1
+  number: 0
+  skip: true  # [py<38 or py>311]
 
 requirements:
+  build:
+    - {{ compiler( 'c' ) }}
   host:
-    - python >=3.8,<4.0
+    - python
     - poetry-core >=1.0.0
-    - wheel
     - cython >=3.0.0
-    - setuptools
     - pip
+    - wheel
   run:
-    - python >=3.8.0,<4.0.0
-    - mmhash3 >=3.0.0,<4.0.0
-    - mmh3 >=4.0.0,<5.0.0     # pip uses mmhash3
+    - python
+    - mmh3 >=4.0.0,<5.0.0
     - requests >=2.20.0,<3.0.0
     - click >=7.1.1,<9.0.0
     - rich >=10.11.0,<14.0.0
@@ -39,25 +39,11 @@ requirements:
     - zstandard >=0.13.0,<1.0.0
     - tenacity >=8.2.3,<9.0.0
   run_constrained:
-# https://github.com/apache/iceberg-python/blob/main/pyproject.toml#L60C1-L60C59
-#pyarrow = { version = ">=9.0.0,<16.0.0", optional = true }
-#pandas = { version = ">=1.0.0,<3.0.0", optional = true }
-#duckdb = { version = ">=0.5.0,<1.0.0", optional = true }
-#ray = { version = ">=2.0.0,<2.10.0", optional = true }
-#python-snappy = { version = ">=0.6.0,<1.0.0", optional = true }
-#thrift = { version = ">=0.13.0,<1.0.0", optional = true }
-#mypy-boto3-glue = { version = ">=1.28.18", optional = true }
-#boto3 = { version = ">=1.24.59", optional = true }
-#3fs = { version = ">=2023.1.0,<2024.1.0", optional = true }
-#adlfs = { version = ">=2023.1.0,<2024.3.0", optional = true }
-#gcsfs = { version = ">=2023.1.0,<2024.1.0", optional = true }
-#psycopg2-binary = { version = ">=2.9.6", optional = true }
-#sqlalchemy = { version = "^2.0.18", optional = true }
-#getdaft = { version = ">=0.2.12", optional = true }
     - pyarrow >=9.0.0,<18.0.0
     - pandas >=1.0.0,<3.0.0
-    - duckdb >=0.5.0,<1.0.0
-    - ray >=2.0.0,<3.0.0
+    - duckdb >=0.5.0,<2.0.0
+    - ray >=2.10.0,<3.0.0  # [py>=39]
+    - ray ==2.10.0  # [py<39]
     - python-snappy >=0.6.0,<1.0.0
     - thrift >=0.13.0,<1.0.0
     - mypy-boto3-glue >=1.28.18
@@ -66,25 +52,77 @@ requirements:
     - adlfs >=2023.1.0,<2024.8.0
     - gcsfs >=2023.1.0,<2024.1.0
     - psycopg2-binary >=2.9.6
-    - sqlalchemy >=1.4.0,<3.0.0
+    - sqlalchemy >=2.0.18,<3.0.0
     - getdaft >=0.2.12
-    - numpy >=1.22.4
+    - numpy >=1.22.4,<2.0.0
 
 test:
+  source_files:
+    - pyproject.toml
+    - tests
   imports:
     - fb303
     - hive_metastore
     - pyiceberg
   commands:
+  # Missing pytest_lazyfixture
+    {% set pytest_args = '--ignore="tests/io/test_fsspec.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/cli/test_console.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/catalog/"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/integration/"' %}
+  # Skip google cloud tests
+    {% set pytest_args = pytest_args + ' -m "not gcs"' %}
+  # Tests incompatible with windows due to path formatting
+  {% if win %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/io/test_io.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/io/test_pyarrow.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/utils/test_manifest.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/avro/test_file.py"' %}
+    {% set pytest_args = pytest_args + ' --ignore="tests/avro/test_file.py"' %}
+    {% set test_skips = ' -k "not (' %}
+    {% set test_skips = test_skips + "read_header" %}
+    {% set test_skips = test_skips + " or column_assignment" %}
+    {% set test_skips = test_skips + " or static_table_same_as_table" %}
+    {% set test_skips = test_skips + " or static_table_gz_same_as_table" %}
+    {% set test_skips = test_skips + " or static_table_io_does_not_exist" %}
+    {% set test_skips = test_skips + " or ymd_pyarrow_transforms" %}
+    {% set test_skips = test_skips + " or legacy_current_snapshot_id" %}
+    {% set test_skips = test_skips + ')"' %}
+    {% set pytest_args = pytest_args + test_skips %}
+  {% endif %}
+
+
     - pip check
     - pyiceberg --help
+  # s390x missing moto
+    - pytest {{ pytest_args }} # [not s390x]
   requires:
     - pip
+    {% if not s390x %}
+    - pytest
+    - pytest-mock
+    - boto3
+    - moto >=5.0.2,<6.0.0
+    - pyarrow
+    - fastavro
+    - numpy
+    # Exact pinnings for pyspark and py4j to avoid pip check error
+    - pyspark 3.4.1
+    - py4j 0.10.9.7
+    - thrift
+    - sqlalchemy
+    {% endif %}
 
 about:
   home: https://iceberg.apache.org/
+  dev_url: https://github.com/apache/iceberg-python/
+  doc_url: https://py.iceberg.apache.org/
   summary: Apache Iceberg is an open table format for huge analytic datasets
+  description: |
+    PyIceberg is a Python library for programmatic access to Iceberg
+    table metadata as well as to table data in Iceberg format.
   license: Apache-2.0
+  license_family: Apache
   license_file:
     - NOTICE
     - LICENSE
